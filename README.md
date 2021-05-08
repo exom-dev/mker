@@ -12,7 +12,7 @@ There are differences between Markdown documents and Marker documents. Please ch
 
 # Getting started
 
-You can install mker just like any other npm package.
+You can install mker just like any other npm package (COMING SOON).
 
 ```shell
 npm i mker --save
@@ -61,8 +61,8 @@ paragraph.
 
 Inline markers like *strong*, _emphasis_, =underline=, ~strikethrough~, and even *_=~nested~=_* in any order.
 
-Multiline *markers
-can exist*.
+Multiline * markers
+can exist, even with spaces around words. *.
 
 - unordered
 - lists
