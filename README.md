@@ -59,7 +59,7 @@ Paragraph.
 Multiline
 paragraph.
 
-Inline markers like *strong*, _emphasis_, =underline=, ~strikethrough, and even *_=~nested~=_* in any order.
+Inline markers like *strong*, _emphasis_, =underline=, ~strikethrough~, and even *_=~nested~=_* in any order.
 
 Multiline *markers
 can exist*.
