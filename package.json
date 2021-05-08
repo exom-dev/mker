@@ -1,0 +1,29 @@
+{
+  "name": "mker",
+  "version": "0.1.0",
+  "description": "Markdown-like documents to HTML compiler",
+  "keywords": [
+    "markdown",
+    "native",
+    "html"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "install": "node build-check.js || npm run rebuild",
+    "rebuild": "node build.js",
+    "prebuild": "node prebuild.js",
+    "check": "node build-check.js"
+  },
+  "author": "The Exom Developers (https://github.com/exom-dev)",
+  "license": "MIT",
+  "repository": "github:exom-dev/mker",
+  "homepage": "https://github.com/exom-dev/mker",
+  "bugs": "https://github.com/exom-dev/mker/issues",
+  "devDependencies": {
+    "cmake-js": "^6.1.0",
+    "cross-spawn": "^7.0.2",
+    "minimist": "^1.2.5",
+    "node-addon-api": "github:nodejs/node-addon-api",
+    "npm-run-path": "^4.0.1"
+  }
+}

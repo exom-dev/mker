@@ -1,0 +1,16 @@
+#ifndef MARKER_DEF_MARKDOWN_DXX_GUARD
+#define MARKER_DEF_MARKDOWN_DXX_GUARD
+
+#include "macro.dxx"
+
+#define MARKER_HEADING        '#'
+#define MARKER_EMPHASIS       '_'
+#define MARKER_STRONG         '*'
+#define MARKER_UNDERLINE      '='
+#define MARKER_STRIKETHROUGH  '~'
+#define MARKER_LIST_UNORDERED '-'
+#define MARKER_TAG_OPEN       '<'
+#define MARKER_TAG_CLOSE      '>'
+#define MARKER_ESCAPE         '\\'
+
+#endif

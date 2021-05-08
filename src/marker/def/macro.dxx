@@ -1,0 +1,7 @@
+#ifndef MARKER_DEF_PREPROCESSOR_DXX_GUARD
+#define MARKER_DEF_PREPROCESSOR_DXX_GUARD
+
+#define _STRINGIFY(str) #str
+#define STRINGIFY(str) _STRINGIFY(str)
+
+#endif
