@@ -30,7 +30,7 @@ Napi::Buffer<uint8_t> compile(const Napi::CallbackInfo& info) {
             env, (uint8_t*) rendered.get_data(), rendered.get_size(), finalize_buffer
         );
     } catch(std::exception &e) {
-        throw Napi::Error::New(env, std::string("Compilation error error\n") + e.what());
+        throw Napi::Error::New(env, std::string("Compilation error\n") + e.what());
     }
 }
 

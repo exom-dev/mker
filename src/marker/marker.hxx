@@ -19,8 +19,8 @@ namespace mker {
                      Marker ()                   noexcept;
             explicit Marker (const char* source) noexcept;
 
-            void  load    (const char* source) noexcept;
-            UnmanagedBuffer<char> compile ();
+            void load(const char* source) noexcept;
+            UnmanagedBuffer<char> compile();
     };
 }
 
