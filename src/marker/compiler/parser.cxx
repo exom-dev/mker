@@ -100,23 +100,24 @@ namespace mker {
                 }
                 case MARKER_LIST_UNORDERED: {
                     AST list;
-                    size_t childIndent; // = indent + 1;
+                    size_t childIndent;
 
                     do {
-                        childIndent = indent + 1; // The list marker has length 1.
+                        childIndent = depth + indent + 1; // The list marker has length 1.
 
                         switch(NEXT) {
-                            case ' ':
-                            case '\t':
                             case '\r':
                             case '\n':
+                                indentStart = srcIndex + 2;
+                            case '\t':
+                            case ' ':
                                 break;
                             case '\0':
                                 list.emplace_back(ASTNodeType::LIST_ELEMENT, AST(), start);
 
                                 return ASTNode(ASTNodeType::LIST, list, start);
                             default:
-                                goto _block_paragraph; // Treat this block as a paragraph (see below)..
+                                goto _block_paragraph; // Treat this block as a paragraph (see below)
                         }
 
                         ADVANCE();
@@ -178,8 +179,9 @@ namespace mker {
 
                                 _end_list_indent_loop:
 
-                                if(indent < childIndent)
+                                if(indent < childIndent) {
                                     break;
+                                }
                             } while(true);
 
                             list.emplace_back(listElement);
@@ -187,7 +189,7 @@ namespace mker {
                             list.emplace_back(ASTNodeType::LIST_ELEMENT, AST(), start);
                         }
 
-                        if(CURRENT != MARKER_LIST_UNORDERED) {
+                        if(CURRENT != MARKER_LIST_UNORDERED || indent < depth) {
                             REWIND(indentStart);
                             return ASTNode(ASTNodeType::LIST, list, start);
                         }
@@ -214,7 +216,7 @@ namespace mker {
                 case '\n': {
                     ADVANCE();
 
-                    if(!multiline) {
+                    if(!multiline || peek_block()) {
                         if(inlineParser.text.start != nullptr) {
                             inlineParser.ast.emplace_back(inlineParser.text);
                         }
@@ -463,6 +465,56 @@ namespace mker {
         inlineParser.text.start = nullptr;
 
         ADVANCE();
+    }
+
+    bool Parser::peek_block() noexcept {
+        size_t indexBackup = srcIndex;
+
+        while(CURRENT == ' ' || CURRENT == '\t') {
+            ADVANCE();
+        }
+
+        switch(CURRENT) {
+            case '\r':
+            case '\n':
+            case '\0':
+                REWIND(indexBackup);
+                return false;
+            case MARKER_HEADING: {
+                size_t headingLevel = 0;
+
+                do {
+                    ++headingLevel;
+                    ADVANCE();
+                } while(CURRENT == MARKER_HEADING);
+
+                if(headingLevel <= 6 && (CURRENT == ' ' || CURRENT == '\t')) {
+                    REWIND(indexBackup);
+                    return true;
+                }
+
+                REWIND(indexBackup);
+                return false;
+            }
+            case MARKER_LIST_UNORDERED: {
+                switch(NEXT) {
+                    case ' ':
+                    case '\t':
+                    case '\r':
+                    case '\n':
+                    case '\0':
+                        REWIND(indexBackup);
+                        return true;
+                    default:
+                        REWIND(indexBackup);
+                        return false;
+                }
+            }
+            default: {
+                REWIND(indexBackup);
+                return false;
+            }
+        }
     }
 }
 

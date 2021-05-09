@@ -1,8 +1,6 @@
 #ifndef MARKER_DATA_UNMANAGED_BUFFER_HXX_GUARD
 #define MARKER_DATA_UNMANAGED_BUFFER_HXX_GUARD
 
-#include "../../lib/remem.hxx"
-
 #include <cstddef>
 #include <cstring>
 
