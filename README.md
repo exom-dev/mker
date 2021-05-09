@@ -12,7 +12,7 @@ There are differences between Markdown documents and Marker documents. Please ch
 
 # Getting started
 
-You can install mker just like any other npm package (COMING SOON).
+You can install mker just like any other npm package.
 
 ```shell
 npm i mker --save
