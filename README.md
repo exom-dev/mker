@@ -112,7 +112,7 @@ cmake-js compile
 
 # Releases
 
-None.
+[0.1.0](https://github.com/exom-dev/mker/releases/tag/0.1.0) - May 9th, 2021
 
 # Contributing
 
