@@ -65,6 +65,8 @@ Inline markers like *strong*, _emphasis_, =underline=, ~strikethrough~, and even
 
 Markers can be escaped: under\_score, 5 \* 10 + 20 \* 30.
 
+\\ is a single backslash. If \ is not followed by either a marker or \, it is rendered as-is.
+
 Multiline * markers
 can exist, even with spaces around words. *.
 
