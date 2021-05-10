@@ -17,6 +17,7 @@ namespace mker {
         private:
             void render_node     (const ASTNode& node, UnmanagedBuffer<char>& output) noexcept;
             void render_children (const ASTNode& node, UnmanagedBuffer<char>& output) noexcept;
+            void render_char     (const char* start, size_t& index, size_t size, UnmanagedBuffer<char>& output) noexcept;
     };
 }
 

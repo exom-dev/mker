@@ -22,6 +22,7 @@ enum class ASTNodeType {
     LIST_ELEMENT,
 
     // Inline elements.
+    RAW_TEXT,
     TEXT,
     EMPHASIS,
     STRONG,

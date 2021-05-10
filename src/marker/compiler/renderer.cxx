@@ -2,6 +2,7 @@
 #include "../def/html.dxx"
 #include "../data/unmanaged_buffer.hxx"
 #include "../def/macro.dxx"
+#include "../../lib/charlib.hxx"
 
 namespace mker {
     Renderer::Renderer(AST&& ast) noexcept {
@@ -89,8 +90,18 @@ namespace mker {
 
                 break;
             }
-            case ASTNodeType::TEXT: {
+            case ASTNodeType::RAW_TEXT: {
                 output.write(node.start, node.end - node.start);
+
+                break;
+            }
+            case ASTNodeType::TEXT: {
+                size_t size = node.end - node.start;
+                size_t i = 0;
+
+                while(i < size) {
+                    render_char(node.start, i, size, output);
+                }
 
                 break;
             }
@@ -136,8 +147,53 @@ namespace mker {
             }
         }
     }
+
     void Renderer::render_children(const ASTNode& node, UnmanagedBuffer<char>& output) noexcept  {
         for(size_t i = 0; i < node.children.size(); ++i)
             render_node(node.children[i], output);
+    }
+
+    void Renderer::render_char(const char* start, size_t& index, size_t size, UnmanagedBuffer<char>& output) noexcept {
+        #define WRITE(c) output.write(c, sizeof(c) - 1)
+
+        switch(start[index]) {
+            case '<':
+                WRITE(HTML_ENTITY_LT);
+                ++index;
+                break;
+            case '>':
+                WRITE(HTML_ENTITY_GT);
+                ++index;
+                break;
+            case '&': {
+                size_t backupIndex = index;
+
+                ++index;
+
+                // Entities like &#1234;
+                if(index < size && start[index] == HTML_ENTITY_NUM_START)
+                    ++index;
+
+                while(index < size && charlib::is_alphanum(start[index]))
+                    ++index;
+
+                // Don't translate &something; to &amp;something;
+                if(index < size && start[index] == HTML_ENTITY_END) {
+                    output.write(start + backupIndex, sizeof(char));
+                } else {
+                    WRITE(HTML_ENTITY_AMP);
+                }
+
+                index = backupIndex + 1;
+                break;
+            }
+            default: {
+                output.write(start + index, sizeof(char));
+                ++index;
+                break;
+            }
+        }
+
+        #undef WRITE
     }
 }

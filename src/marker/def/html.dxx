@@ -30,4 +30,11 @@
 #define HTML_TAG_OPEN_LIST_ELEMENT    "<li>"
 #define HTML_TAG_CLOSE_LIST_ELEMENT   "</li>"
 
+#define HTML_ENTITY_LT                "&lt;"
+#define HTML_ENTITY_GT                "&gt;"
+#define HTML_ENTITY_AMP               "&amp;"
+
+#define HTML_ENTITY_NUM_START         '#'
+#define HTML_ENTITY_END               ';'
+
 #endif

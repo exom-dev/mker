@@ -19,7 +19,7 @@ Napi::Buffer<uint8_t> compile(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     std::unique_ptr<char, decltype(re::free)*> alias(
-        strDup(info[0].As<Napi::String>().Utf8Value().c_str()), re::free
+        str_dup(info[0].As<Napi::String>().Utf8Value().c_str()), re::free
     );
 
     try {

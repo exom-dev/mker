@@ -3,16 +3,16 @@
 
 #include <cstring>
 
-char* strDup(const char* str) {
+char* str_dup(const char* str) {
     size_t length = strlen(str) + 1;
-    char* ptr = reinterpret_cast<char*>(re::malloc(length, "StrDup String", __FILE__, __LINE__));
+    char* ptr = reinterpret_cast<char*>(REMEM_MALLOC(length, "StrDup String"));
 
     memcpy(ptr, str, length);
     return ptr;
 }
 
-char* strDup(const char* str, size_t size) {
-    char* ptr = reinterpret_cast<char*>(re::malloc(size + 1, "StrDup String", __FILE__, __LINE__));
+char* str_dup(const char* str, size_t size) {
+    char* ptr = reinterpret_cast<char*>(REMEM_MALLOC(size + 1, "StrDup String"));
 
     memcpy(ptr, str, size);
     ptr[size] = '\0';

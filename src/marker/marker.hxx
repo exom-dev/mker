@@ -20,7 +20,7 @@ namespace mker {
             explicit Marker (const char* source) noexcept;
 
             void load(const char* source) noexcept;
-            UnmanagedBuffer<char> compile ();
+            UnmanagedBuffer<char> compile();
     };
 }
 

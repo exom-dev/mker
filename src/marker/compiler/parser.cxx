@@ -315,7 +315,7 @@ namespace mker {
 
         modInfo.start = &CURRENT;
 
-        bool forceTextChildren = false;
+        bool containsRawText = false;
 
         switch(CURRENT) {
             case MARKER_EMPHASIS:
@@ -333,7 +333,7 @@ namespace mker {
             case MARKER_TAG_OPEN:
             case MARKER_TAG_CLOSE:
                 modInfo.type = ASTNodeType::TAG;
-                forceTextChildren = true; // Tags must have Text children.
+                containsRawText = true; // Tags must have a RAW_TEXT child.
                 break;
             default:
                 return false;
@@ -364,7 +364,7 @@ namespace mker {
                 return false;
 
             // Modifier start was found. End it.
-            consume_inline_modifier_end(inlineParser, modInfo, forceTextChildren, startInfoIt);
+            consume_inline_modifier_end(inlineParser, modInfo, containsRawText, startInfoIt);
 
             return true; // true - a modifier end was found.
         }
@@ -375,7 +375,7 @@ namespace mker {
         inlineParser.stack.push_back(modInfo);
     }
 
-    void Parser::consume_inline_modifier_end(InlineParser& inlineParser, InlineStackInfo& modInfo, bool forceTextChildren, decltype(inlineParser.stack)::iterator startInfoIt) noexcept {
+    void Parser::consume_inline_modifier_end(InlineParser& inlineParser, InlineStackInfo& modInfo, bool containsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept {
         ASTNode inlineNode(modInfo.type);
         InlineStackInfo startInfo = *startInfoIt;
 
@@ -404,26 +404,29 @@ namespace mker {
                     ++eraseStartIndex; // Don't delete this text, as it's not a child of the inline node.
 
                     // Right text is not empty.
-                    if(splitText.start < splitText.end)
+                    if(splitText.start < splitText.end && !containsRawText)
                         inlineNode.children.push_back(splitText);
                 }
             } else if(inlineParser.ast[modifierIndex].start == startInfo.start) {
                 // Text starts with the modifier.
-                inlineParser.ast[modifierIndex].start = startInfo.start + 1;// + (startInfo.type == ASTNodeType::EMPHASIS);
-                inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
+                inlineParser.ast[modifierIndex].start = startInfo.start + 1;
+
+                if(!containsRawText)
+                    inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
             } else {
-                inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
+                if(!containsRawText)
+                    inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
             }
 
             ++modifierIndex;
         }
 
-        // Make the output AST elements be children of this modifier.
-        for(; modifierIndex < inlineParser.ast.size(); ++modifierIndex) {
-            // Tags need only text children.
-            if(forceTextChildren)
-                inlineNode.children.push_back(ASTNode(ASTNodeType::TEXT, inlineParser.ast[modifierIndex].start, inlineParser.ast[modifierIndex].end));
-            else inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
+        if(!containsRawText) {
+            // Make the output AST elements be children of this modifier.
+            for(; modifierIndex < inlineParser.ast.size(); ++modifierIndex) {
+                // Tags need only text children.
+                inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
+            }
         }
 
         // Pop the modifier start (it's at the top because the others have been erased).
@@ -439,7 +442,7 @@ namespace mker {
                 if(inlineParser.text.end > startInfo.start) {
                     ASTNode splitText(ASTNodeType::TEXT);
 
-                    splitText.start = startInfo.start + 1;// + (startInfo.type == ASTNodeType::STRONG);
+                    splitText.start = startInfo.start + 1;
                     splitText.end = inlineParser.text.end;
 
                     inlineParser.text.end = startInfo.start;
@@ -447,16 +450,24 @@ namespace mker {
                     inlineParser.ast.push_back(inlineParser.text);
 
                     // Right text is not empty.
-                    if(splitText.start < splitText.end)
+                    if(splitText.start < splitText.end && !containsRawText)
                         inlineNode.children.push_back(splitText);
                 }
             } else if(inlineParser.text.start == startInfo.start) {
                 // Text starts with the modifier.
-                inlineParser.text.start = startInfo.start + 1;// + (startInfo.type == ASTNodeType::STRONG);
-                inlineNode.children.push_back(inlineParser.text);
+                inlineParser.text.start = startInfo.start + 1;
+
+                if(!containsRawText)
+                    inlineNode.children.push_back(inlineParser.text);
             } else {
-                inlineNode.children.push_back(inlineParser.text);
+                if(!containsRawText)
+                    inlineNode.children.push_back(inlineParser.text);
             }
+        }
+
+        if(containsRawText) {
+            // Write the raw text.
+            inlineNode.children.push_back(ASTNode(ASTNodeType::RAW_TEXT, inlineNode.start + 1, inlineNode.end - 1));
         }
 
         // Push the modifier node.

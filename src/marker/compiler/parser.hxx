@@ -35,7 +35,7 @@ namespace mker {
 
             bool    consume_inline_modifier       (InlineParser& inlineParser) noexcept;
             void    consume_inline_modifier_start (InlineParser& inlineParser, InlineStackInfo& modInfo) noexcept;
-            void    consume_inline_modifier_end   (InlineParser& inlineParser, InlineStackInfo& modInfo, bool forceTextChildren, decltype(inlineParser.stack)::iterator startInfoIt) noexcept;
+            void    consume_inline_modifier_end   (InlineParser& inlineParser, InlineStackInfo& modInfo, bool containsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept;
 
             bool peek_block() noexcept;
     };

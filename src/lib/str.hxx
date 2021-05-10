@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-char* strDup(const char* str);
-char* strDup(const char* str, size_t size);
+char* str_dup(const char* str);
+char* str_dup(const char* str, size_t size);
 
 #endif
