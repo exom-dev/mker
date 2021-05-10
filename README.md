@@ -85,7 +85,7 @@ Some symbols are automatically translated to HTML entities:
 - `>` - `&gt;`
 - `&` - `&amp;`
 
-The `&`symbol will not be translated if it's already part of an HTML entity.
+The `&` symbol will not be translated if it's already part of an HTML entity.
 
 ```html
 Simple & symbol      -> Simple &amp; symbol
@@ -94,17 +94,17 @@ Simple &copy; entity -> Simple &copy;
 
 ### HTML Tags
 
-The text inside HTML tags will not be left as-is. Furthermore, no entity translations will be performed.
+The text inside HTML tags will be left as-is. Furthermore, no entity translations will be performed.
 
 Example input:
 
-```
+```md
 This is *strong &* while <span attr="this is *not*, and & is not an entity"> </span>
 ```
 
 Output:
 
-```
+```html
 <p>This is <strong>strong &amp;</strong> while <span attr="this is *not*, and & is not an entity"> </span></p>
 ```
 
