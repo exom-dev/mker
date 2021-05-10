@@ -89,7 +89,7 @@ The `&` symbol will not be translated if it's already part of an HTML entity.
 
 ```html
 Simple & symbol      -> Simple &amp; symbol
-Simple &copy; entity -> Simple &copy;
+Simple &copy; entity -> Simple &copy; entity
 ```
 
 ### HTML Tags
