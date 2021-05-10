@@ -6,7 +6,7 @@
 
 **mker** (pronounced *marker*) is a native Markdown-like document parser for [Node.js](https://nodejs.org).
 
-Currently, it can only render HTML output.
+Currently, it can only render HTML.
 
 There are differences between Markdown documents and Marker documents. Please check the [quick documentation](#Quick-Documentation).
 
