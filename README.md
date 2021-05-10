@@ -63,6 +63,8 @@ paragraph.
 
 Inline markers like *strong*, _emphasis_, =underline=, ~strikethrough~, and even *_=~nested~=_* in any order.
 
+Markers can be escaped: under\_score, 5 \* 10 + 20 \* 30.
+
 Multiline * markers
 can exist, even with spaces around words. *.
 
