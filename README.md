@@ -4,7 +4,9 @@
 
 # About <a href="https://cmake.org/cmake/help/v3.0/release/3.0.0.html"><img align="right" src="https://img.shields.io/badge/CMake-3.0-BA1F28?logo=CMake" alt="CMake 3.0" /></a><a href="https://en.wikipedia.org/wiki/C%2B%2B17"><img align="right" src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=C%2B%2B" alt="C++ 17" /></a><a href="https://nodejs.org/api/n-api.html"><img align="right" src="https://img.shields.io/badge/N--API-3-339933?logo=Node.js&logoColor=FFFFFF" alt="N-API 3" /></a>
 
-**mker** (pronounced *marker*) is a native Markdown-like document to HTML compiler for [Node.js](https://nodejs.org).
+**mker** (pronounced *marker*) is a native Markdown-like document parser for [Node.js](https://nodejs.org).
+
+Currently, it can only render HTML output.
 
 There are differences between Markdown documents and Marker documents. Please check the [quick documentation](#Quick-Documentation).
 
