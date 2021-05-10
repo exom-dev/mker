@@ -45,7 +45,7 @@ const result = mker('Hello, *World*!');
 Marker documents have a structure similar to Markdown documents.
 The biggest difference is the list of available markers, and how they behave.
 
-Here's a cheatsheet that shows the currently planned markers. Keep in mind that
+Here's a cheatsheet that shows the currently available markers. Keep in mind that
 there may be bugs, as the implementation is in its early stages.
 
 ```md
@@ -75,6 +75,37 @@ can exist, even with spaces around words. *.
 
 Inline <html> tags </html>  of <any type *not strong*> *strong* and also
 multiline</any>.
+```
+
+### HTML Entities
+
+Some symbols are automatically translated to HTML entities:
+
+- `<` - `&lt;`
+- `>` - `&gt;`
+- `&` - `&amp;`
+
+The `&`symbol will not be translated if it's already part of an HTML entity.
+
+```html
+Simple & symbol      -> Simple &amp; symbol
+Simple &copy; entity -> Simple &copy;
+```
+
+### HTML Tags
+
+The text inside HTML tags will not be left as-is. Furthermore, no entity translations will be performed.
+
+Example input:
+
+```
+This is *strong &* while <span attr="this is *not*, and & is not an entity"> </span>
+```
+
+Output:
+
+```
+<p>This is <strong>strong &amp;</strong> while <span attr="this is *not*, and & is not an entity"> </span></p>
 ```
 
 ## Compiling the Package
