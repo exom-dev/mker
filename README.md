@@ -77,6 +77,30 @@ can exist, even with spaces around words. *.
     - well
   - ## and headings
 
+1. ordered lists
+1. which can have arabic numerals
+
+i. lowercase roman numerals
+
+I. uppercase roman numerals
+
+a. lowercase letters
+
+A. uppercase letters
+
+5. lists that start at a specific number
+
+aaa. this starts at 'aaa'
+aaa. this is 'aab'
+
+9. reverse lists
+8. if the second element has a number less than the first
+8. this is 7
+
+IV. same for roman numerals
+III. if a different type of list is encountered
+a. it is counted as a separate list
+
 Inline <html> tags </html>  of <any type *not strong*> *strong* and also
 multiline</any>.
 ```
