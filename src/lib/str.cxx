@@ -1,5 +1,5 @@
 #include "str.hxx"
-#include "remem.hxx"
+#include "../marker/lib/remem.hxx"
 
 #include <cstring>
 

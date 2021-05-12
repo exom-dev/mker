@@ -8,7 +8,7 @@
 #include "marker/data/unmanaged_buffer.hxx"
 
 #include "lib/str.hxx"
-#include "lib/remem.hxx"
+#include "marker/lib/remem.hxx"
 
 void finalize_buffer(Napi::Env env, uint8_t* data) {
     LOG_DEBUG("Finalizing buffer %p", data);

@@ -30,12 +30,13 @@ namespace mker {
             AST parse() noexcept;
 
         private:
-            ASTNode consume_block                 (size_t depth)          noexcept;
-            AST     consume_paragraph             (bool multiline)        noexcept;
+            ASTNode consume_block                 (size_t depth)   noexcept;
+            AST     consume_paragraph             (bool multiline) noexcept;
+            bool    consume_ordered_list          (uint32_t& listStart, ListType& listType, size_t& length) noexcept;
 
             bool    consume_inline_modifier       (InlineParser& inlineParser) noexcept;
             void    consume_inline_modifier_start (InlineParser& inlineParser, InlineStackInfo& modInfo) noexcept;
-            void    consume_inline_modifier_end   (InlineParser& inlineParser, InlineStackInfo& modInfo, bool containsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept;
+            void    consume_inline_modifier_end   (InlineParser& inlineParser, InlineStackInfo& modInfo, bool leaveAsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept;
 
             bool peek_block() noexcept;
     };

@@ -1,6 +1,7 @@
 #include "parser.hxx"
 #include "../def/marker.dxx"
 #include "../data/unmanaged_buffer.hxx"
+#include "../lib/charlib.hxx"
 
 #include <cstddef>
 #include <stack>
@@ -72,7 +73,7 @@ namespace mker {
             switch(CURRENT) {
                 case MARKER_HEADING: {
                     size_t headingLevel = 0;
-                    size_t indexBackup = srcIndex;
+                    indentStart = srcIndex;
 
                     do {
                         ++headingLevel;
@@ -93,7 +94,7 @@ namespace mker {
                         );
                     }
 
-                    REWIND(indexBackup);
+                    REWIND(indentStart);
 
                     // Normal paragraph.
                     goto _block_paragraph; // Treat this block as a paragraph (see below).
@@ -113,9 +114,9 @@ namespace mker {
                             case ' ':
                                 break;
                             case '\0':
-                                list.emplace_back(ASTNodeType::LIST_ELEMENT, AST(), start);
+                                list.emplace_back(ASTNodeType::UNORDERED_LIST_ELEMENT, AST(), start);
 
-                                return ASTNode(ASTNodeType::LIST, list, start);
+                                return ASTNode(ASTNodeType::UNORDERED_LIST, list, start);
                             default:
                                 goto _block_paragraph; // Treat this block as a paragraph (see below)
                         }
@@ -133,25 +134,27 @@ namespace mker {
                         }
 
                         if(CURRENT == '\0') {
-                            list.emplace_back(ASTNodeType::LIST_ELEMENT, AST(), start);
+                            list.emplace_back(ASTNodeType::UNORDERED_LIST_ELEMENT, AST(), start);
 
-                            return ASTNode(ASTNodeType::LIST, list, start);
+                            return ASTNode(ASTNodeType::UNORDERED_LIST, list, start);
                         }
 
                         if(CURRENT != '\r' && CURRENT != '\n') {
-                            ASTNode listElement(ASTNodeType::LIST_ELEMENT);
+                            ASTNode listElement(ASTNodeType::UNORDERED_LIST_ELEMENT);
 
+                            // Process children.
                             do {
                                 listElement.children.emplace_back(consume_block(childIndent));
 
                                 if(CURRENT == '\0') {
                                     list.emplace_back(listElement);
-                                    return ASTNode(ASTNodeType::LIST, list, start);
+                                    return ASTNode(ASTNodeType::UNORDERED_LIST, list, start);
                                 }
 
                                 indent = 0;
                                 indentStart = srcIndex;
 
+                                // Process indent (spaces, tabs, and line endings).
                                 while(true) {
                                     switch(CURRENT) {
                                         case ' ':
@@ -186,16 +189,155 @@ namespace mker {
 
                             list.emplace_back(listElement);
                         } else {
-                            list.emplace_back(ASTNodeType::LIST_ELEMENT, AST(), start);
+                            list.emplace_back(ASTNodeType::UNORDERED_LIST_ELEMENT, AST(), start);
+
+                            // Skip line endings.
+                            do {
+                                ADVANCE();
+                            } while(CURRENT == '\r' || CURRENT == '\n');
                         }
 
                         if(CURRENT != MARKER_LIST_UNORDERED || indent < depth) {
                             REWIND(indentStart);
-                            return ASTNode(ASTNodeType::LIST, list, start);
+                            return ASTNode(ASTNodeType::UNORDERED_LIST, list, start);
                         }
                     } while(true);
                 }
-                default:
+                default: {
+                    // Ordered list.
+                    ASTNode list;
+                    size_t childIndent;
+                    size_t length;
+
+                    if(!consume_ordered_list(list.meta.listStart, list.meta.listType, length)) {
+                        REWIND(indentStart);
+                        goto _block_paragraph;
+                    }
+
+                    list.start = start;
+                    list.type =  ASTNodeType::ORDERED_LIST;
+                    list.meta.listReversed = false;
+
+                    // Check the second element number. If it's smaller than the first, mark the list as reversed.
+                    bool isSecondElement = true;
+
+                    do {
+                        childIndent = depth + indent + length;
+
+                        switch(CURRENT) {
+                            case '\r':
+                            case '\n':
+                                indentStart = srcIndex + 1; // Skip the character
+                            case '\t':
+                            case ' ':
+                                break;
+                            case '\0':
+                                list.children.emplace_back(ASTNodeType::ORDERED_LIST_ELEMENT, AST(), start);
+
+                                return list;
+                            default:
+                                REWIND(indentStart);
+                                goto _block_paragraph; // Treat this block as a paragraph (see below)
+                        }
+
+                        while(true) {
+                            if(CURRENT == ' ')
+                                childIndent += 1;
+                            else if(CURRENT == '\t')
+                                childIndent += 4;
+                            else break;
+
+                            ADVANCE();
+                        }
+
+                        if(CURRENT == '\0') {
+                            list.children.emplace_back(ASTNodeType::ORDERED_LIST_ELEMENT, AST(), start);
+
+                            return list;
+                        }
+
+                        if(CURRENT != '\r' && CURRENT != '\n') {
+                            ASTNode listElement(ASTNodeType::ORDERED_LIST_ELEMENT);
+
+                            // Process children.
+                            do {
+                                listElement.children.emplace_back(consume_block(childIndent));
+
+                                if(CURRENT == '\0') {
+                                    list.children.emplace_back(listElement);
+                                    return list;
+                                }
+
+                                indent = 0;
+                                indentStart = srcIndex;
+
+                                // Process indent (spaces, tabs, and line endings).
+                                while(true) {
+                                    switch(CURRENT) {
+                                        case ' ':
+                                            ++indent;
+                                            break;
+                                        case '\t':
+                                            indent += 4;
+                                            break;
+                                        case '\r':
+                                            if(NEXT == '\n')
+                                                ADVANCE();
+
+                                            // Fallthrough.
+                                        case '\n':
+                                            indent = 0;
+                                            indentStart = srcIndex;
+
+                                            break;
+                                        default:
+                                            goto _end_ordered_list_indent_loop;
+                                    }
+
+                                    ADVANCE();
+                                }
+
+                            _end_ordered_list_indent_loop:
+
+                                if(indent < childIndent) {
+                                    break;
+                                }
+                            } while(true);
+
+                            list.children.emplace_back(listElement);
+                        } else {
+                            list.children.emplace_back(ASTNodeType::ORDERED_LIST_ELEMENT, AST(), start);
+
+                            // Skip line endings.
+                            do {
+                                ADVANCE();
+                            } while(CURRENT == '\r' || CURRENT == '\n');
+                        }
+
+                        uint32_t listStart;
+                        ListType listType;
+
+                        if(indent < depth || !consume_ordered_list(listStart, listType, length)) {
+                            REWIND(indentStart);
+                            return list;
+                        }
+
+                        if(listType != list.meta.listType) {
+                            REWIND(indentStart);
+                            return list;
+                        }
+
+                        // Mark the list as reversed if the second element has a smaller number.
+                        if(isSecondElement) {
+                            isSecondElement = false;
+
+                            if(listStart < list.meta.listStart)
+                                list.meta.listReversed = true;
+                        }
+                    } while(true);
+                }
+
+                // Still part of the default case.
                 _block_paragraph:
                     return ASTNode(ASTNodeType::PARAGRAPH, consume_paragraph(true), start);
             }
@@ -283,7 +425,7 @@ namespace mker {
                             ADVANCE(); // Skip the escape character.
                             // Fallthrough.
                         }
-                        default: ; // Treat the escape character like a normal character.
+                        default: // Treat the escape character like a normal character.
                         // Fallthrough.
                         goto _paragraph_normal_char;
                     }
@@ -310,12 +452,86 @@ namespace mker {
         }
     }
 
+
+    bool Parser::consume_ordered_list(uint32_t& listStart, ListType& listType, size_t& length) noexcept {
+        size_t indexBackup = srcIndex;
+        length = 0;
+
+        if(charlib::is_lower_alpha(CURRENT)) {
+            do {
+                ++length;
+                ADVANCE();
+            } while(charlib::is_lower_alpha(CURRENT));
+
+            if(CURRENT != MARKER_LIST_ORDERED) {
+                REWIND(indexBackup);
+                return false;
+            }
+
+            ADVANCE();
+            ++length;
+
+            if(charlib::roman_parse(src + indexBackup, length - 1, listStart)) {
+                listType = ListType::ROMAN_LOWER;
+                return true;
+            }
+
+            if(charlib::alpha_parse(src + indexBackup, length - 1, listStart)) {
+                listType = ListType::LETTER_LOWER;
+                return true;
+            }
+        } else if(charlib::is_upper_alpha(CURRENT)) {
+            do {
+                ++length;
+                ADVANCE();
+            } while(charlib::is_upper_alpha(CURRENT));
+
+            if(CURRENT != MARKER_LIST_ORDERED) {
+                REWIND(indexBackup);
+                return false;
+            }
+
+            ADVANCE();
+            ++length;
+
+            if(charlib::roman_parse(src + indexBackup, length - 1, listStart)) {
+                listType = ListType::ROMAN_UPPER;
+                return true;
+            }
+
+            if(charlib::alpha_parse(src + indexBackup, length - 1, listStart)) {
+                listType = ListType::LETTER_UPPER;
+                return true;
+            }
+        } else if(charlib::is_digit(CURRENT)) {
+            do {
+                ++length;
+                ADVANCE();
+            } while(charlib::is_digit(CURRENT));
+
+            if(CURRENT != MARKER_LIST_ORDERED) {
+                REWIND(indexBackup);
+                return false;
+            }
+
+            ADVANCE();
+            ++length;
+
+            if(charlib::num_parse(src + indexBackup, length - 1, listStart)) {
+                listType = ListType::ARABIC;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     bool Parser::consume_inline_modifier(InlineParser& inlineParser) noexcept {
         InlineStackInfo modInfo { };
 
         modInfo.start = &CURRENT;
 
-        bool containsRawText = false;
+        bool leaveAsRawText = false;
 
         switch(CURRENT) {
             case MARKER_EMPHASIS:
@@ -333,7 +549,7 @@ namespace mker {
             case MARKER_TAG_OPEN:
             case MARKER_TAG_CLOSE:
                 modInfo.type = ASTNodeType::TAG;
-                containsRawText = true; // Tags must have a RAW_TEXT child.
+                leaveAsRawText = true; // Tags must have a RAW_TEXT child.
                 break;
             default:
                 return false;
@@ -364,7 +580,7 @@ namespace mker {
                 return false;
 
             // Modifier start was found. End it.
-            consume_inline_modifier_end(inlineParser, modInfo, containsRawText, startInfoIt);
+            consume_inline_modifier_end(inlineParser, modInfo, leaveAsRawText, startInfoIt);
 
             return true; // true - a modifier end was found.
         }
@@ -375,7 +591,7 @@ namespace mker {
         inlineParser.stack.push_back(modInfo);
     }
 
-    void Parser::consume_inline_modifier_end(InlineParser& inlineParser, InlineStackInfo& modInfo, bool containsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept {
+    void Parser::consume_inline_modifier_end(InlineParser& inlineParser, InlineStackInfo& modInfo, bool leaveAsRawText, decltype(inlineParser.stack)::iterator startInfoIt) noexcept {
         ASTNode inlineNode(modInfo.type);
         InlineStackInfo startInfo = *startInfoIt;
 
@@ -404,24 +620,24 @@ namespace mker {
                     ++eraseStartIndex; // Don't delete this text, as it's not a child of the inline node.
 
                     // Right text is not empty.
-                    if(splitText.start < splitText.end && !containsRawText)
+                    if(splitText.start < splitText.end && !leaveAsRawText)
                         inlineNode.children.push_back(splitText);
                 }
             } else if(inlineParser.ast[modifierIndex].start == startInfo.start) {
                 // Text starts with the modifier.
                 inlineParser.ast[modifierIndex].start = startInfo.start + 1;
 
-                if(!containsRawText)
+                if(!leaveAsRawText)
                     inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
             } else {
-                if(!containsRawText)
+                if(!leaveAsRawText)
                     inlineNode.children.push_back(inlineParser.ast[modifierIndex]);
             }
 
             ++modifierIndex;
         }
 
-        if(!containsRawText) {
+        if(!leaveAsRawText) {
             // Make the output AST elements be children of this modifier.
             for(; modifierIndex < inlineParser.ast.size(); ++modifierIndex) {
                 // Tags need only text children.
@@ -450,22 +666,22 @@ namespace mker {
                     inlineParser.ast.push_back(inlineParser.text);
 
                     // Right text is not empty.
-                    if(splitText.start < splitText.end && !containsRawText)
+                    if(splitText.start < splitText.end && !leaveAsRawText)
                         inlineNode.children.push_back(splitText);
                 }
             } else if(inlineParser.text.start == startInfo.start) {
                 // Text starts with the modifier.
                 inlineParser.text.start = startInfo.start + 1;
 
-                if(!containsRawText)
+                if(!leaveAsRawText)
                     inlineNode.children.push_back(inlineParser.text);
             } else {
-                if(!containsRawText)
+                if(!leaveAsRawText)
                     inlineNode.children.push_back(inlineParser.text);
             }
         }
 
-        if(containsRawText) {
+        if(leaveAsRawText) {
             // Write the raw text.
             inlineNode.children.push_back(ASTNode(ASTNodeType::RAW_TEXT, inlineNode.start + 1, inlineNode.end - 1));
         }
@@ -522,6 +738,17 @@ namespace mker {
                 }
             }
             default: {
+                // Ordered list.
+                uint32_t listStart;
+                ListType listType;
+                size_t length;
+
+                if(consume_ordered_list(listStart, listType, length)) {
+                    REWIND(indexBackup);
+                    return true;
+                }
+
+                // Paragraph.
                 REWIND(indexBackup);
                 return false;
             }

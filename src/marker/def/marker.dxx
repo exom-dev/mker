@@ -9,6 +9,7 @@
 #define MARKER_UNDERLINE      '='
 #define MARKER_STRIKETHROUGH  '~'
 #define MARKER_LIST_UNORDERED '-'
+#define MARKER_LIST_ORDERED   '.'
 #define MARKER_TAG_OPEN       '<'
 #define MARKER_TAG_CLOSE      '>'
 #define MARKER_ESCAPE         '\\'

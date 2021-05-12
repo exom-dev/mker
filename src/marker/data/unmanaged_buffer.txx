@@ -1,9 +1,14 @@
 #include "unmanaged_buffer.hxx"
-#include "../../lib/remem.hxx"
+#include "../lib/remem.hxx"
 
 template<typename T>
 size_t UnmanagedBuffer<T>::get_size() noexcept {
     return size;
+}
+
+template<typename T>
+void UnmanagedBuffer<T>::set_size(size_t value) noexcept {
+    size = value;
 }
 
 template<typename T>

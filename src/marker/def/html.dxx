@@ -3,38 +3,53 @@
 
 #include "macro.dxx"
 
-#define HTML_TAG_OPEN                "<"
-#define HTML_TAG_CLOSE               ">"
+#define HTML_TAG_OPEN                  "<"
+#define HTML_TAG_CLOSE                 ">"
 
-#define HTML_TAG_OPEN_PARAGRAPH      "<p>"
-#define HTML_TAG_CLOSE_PARAGRAPH     "</p>"
+#define HTML_TAG_OPEN_PARAGRAPH        "<p>"
+#define HTML_TAG_CLOSE_PARAGRAPH       "</p>"
 
-#define HTML_TAG_OPEN_EMPHASIS       "<em>"
-#define HTML_TAG_CLOSE_EMPHASIS      "</em>"
+#define HTML_TAG_OPEN_EMPHASIS         "<em>"
+#define HTML_TAG_CLOSE_EMPHASIS        "</em>"
 
-#define HTML_TAG_OPEN_STRONG         "<strong>"
-#define HTML_TAG_CLOSE_STRONG        "</strong>"
+#define HTML_TAG_OPEN_STRONG           "<strong>"
+#define HTML_TAG_CLOSE_STRONG          "</strong>"
 
-#define HTML_TAG_OPEN_UNDERLINE      "<u>"
-#define HTML_TAG_CLOSE_UNDERLINE     "</u>"
+#define HTML_TAG_OPEN_UNDERLINE        "<u>"
+#define HTML_TAG_CLOSE_UNDERLINE       "</u>"
 
-#define HTML_TAG_OPEN_STRIKETHROUGH  "<s>"
-#define HTML_TAG_CLOSE_STRIKETHROUGH "</s>"
+#define HTML_TAG_OPEN_STRIKETHROUGH    "<s>"
+#define HTML_TAG_CLOSE_STRIKETHROUGH   "</s>"
 
-#define HTML_TAG_OPEN_HEADING(level)  ("<h" STRINGIFY(level) ">")
-#define HTML_TAG_CLOSE_HEADING(level) ("</h" STRINGIFY(level) ">")
+#define HTML_TAG_OPEN_HEADING(level)   ("<h" STRINGIFY(level) ">")
+#define HTML_TAG_CLOSE_HEADING(level)  ("</h" STRINGIFY(level) ">")
 
-#define HTML_TAG_OPEN_LIST_UNORDERED  "<ul>"
-#define HTML_TAG_CLOSE_LIST_UNORDERED "</ul>"
+#define HTML_TAG_OPEN_LIST_UNORDERED   "<ul>"
+#define HTML_TAG_CLOSE_LIST_UNORDERED  "</ul>"
 
-#define HTML_TAG_OPEN_LIST_ELEMENT    "<li>"
-#define HTML_TAG_CLOSE_LIST_ELEMENT   "</li>"
+#define HTML_TAG_OPEN_LIST_ORDERED     "<ol>"
+#define HTML_TAG_CLOSE_LIST_ORDERED    "</ol>"
 
-#define HTML_ENTITY_LT                "&lt;"
-#define HTML_ENTITY_GT                "&gt;"
-#define HTML_ENTITY_AMP               "&amp;"
+#define HTML_TAG_OPEN_LIST_ELEMENT     "<li>"
+#define HTML_TAG_CLOSE_LIST_ELEMENT    "</li>"
 
-#define HTML_ENTITY_NUM_START         '#'
-#define HTML_ENTITY_END               ';'
+#define HTML_ENTITY_LT                 "&lt;"
+#define HTML_ENTITY_GT                 "&gt;"
+#define HTML_ENTITY_AMP                "&amp;"
+
+#define HTML_ENTITY_NUM_START          '#'
+#define HTML_ENTITY_END                ';'
+
+#define HTML_ATTR_ASSIGNMENT           "="
+
+#define HTML_ATTR_OL_START             "start"
+#define HTML_ATTR_OL_TYPE              "type"
+#define HTML_ATTR_OL_REVERSED          "reversed"
+
+#define HTML_ATTR_OL_TYPE_ROMAN_LOWER  "\"i\""
+#define HTML_ATTR_OL_TYPE_ROMAN_UPPER  "\"I\""
+#define HTML_ATTR_OL_TYPE_LETTER_LOWER "\"a\""
+#define HTML_ATTR_OL_TYPE_LETTER_UPPER "\"A\""
+
 
 #endif

@@ -2,7 +2,8 @@
 #include "../def/html.dxx"
 #include "../data/unmanaged_buffer.hxx"
 #include "../def/macro.dxx"
-#include "../../lib/charlib.hxx"
+#include "../def/limits.dxx"
+#include "../lib/charlib.hxx"
 
 namespace mker {
     Renderer::Renderer(AST&& ast) noexcept {
@@ -19,6 +20,7 @@ namespace mker {
                 output.write("\n", 1);
         }
 
+        // Write the null character, but don't count it for the final size.
         output.write("\0", 1);
         output.ignore_last();
         
@@ -76,14 +78,77 @@ namespace mker {
 
                 break;
             }
-            case ASTNodeType::LIST: {
+            case ASTNodeType::UNORDERED_LIST: {
                 output.write(HTML_TAG_OPEN_LIST_UNORDERED, sizeof(HTML_TAG_OPEN_LIST_UNORDERED) - 1);
                 render_children(node, output);
                 output.write(HTML_TAG_CLOSE_LIST_UNORDERED, sizeof(HTML_TAG_CLOSE_LIST_UNORDERED) - 1);
 
                 break;
             }
-            case ASTNodeType::LIST_ELEMENT: {
+            case ASTNodeType::UNORDERED_LIST_ELEMENT: {
+                output.write(HTML_TAG_OPEN_LIST_ELEMENT, sizeof(HTML_TAG_OPEN_LIST_ELEMENT) - 1);
+                render_children(node, output);
+                output.write(HTML_TAG_CLOSE_LIST_ELEMENT, sizeof(HTML_TAG_CLOSE_LIST_ELEMENT) - 1);
+
+                break;
+            }
+            case ASTNodeType::ORDERED_LIST: {
+                // Exclude the end '>' to be able to write attributes if needed.
+                output.write(HTML_TAG_OPEN_LIST_ORDERED, sizeof(HTML_TAG_OPEN_LIST_ORDERED) - 2);
+
+                // Start.
+                if(node.meta.listStart != 1) {
+                    output.write(" ", sizeof(" ") - 1);
+
+                    output.write(HTML_ATTR_OL_START, sizeof(HTML_ATTR_OL_START) - 1);
+                    output.write(HTML_ATTR_ASSIGNMENT, sizeof(HTML_ATTR_ASSIGNMENT) - 1);
+
+                    output.adjust_capacity(LIMITS_UINT32_DIGITS);
+
+                    output.set_size(output.get_size() + charlib::num_to_buffer(output.get_data() + output.get_size(), node.meta.listStart));
+                }
+
+                // Type.
+                if(node.meta.listType != ListType::ARABIC) {
+                    output.write(" ", sizeof(" ") - 1);
+
+                    output.write(HTML_ATTR_OL_TYPE, sizeof(HTML_ATTR_OL_TYPE) - 1);
+                    output.write(HTML_ATTR_ASSIGNMENT, sizeof(HTML_ATTR_ASSIGNMENT) - 1);
+
+                    switch(node.meta.listType) {
+                        case ListType::ROMAN_LOWER:
+                            output.write(HTML_ATTR_OL_TYPE_ROMAN_LOWER, sizeof(HTML_ATTR_OL_TYPE_ROMAN_LOWER) - 1);
+                            break;
+                        case ListType::ROMAN_UPPER:
+                            output.write(HTML_ATTR_OL_TYPE_ROMAN_UPPER, sizeof(HTML_ATTR_OL_TYPE_ROMAN_UPPER) - 1);
+                            break;
+                        case ListType::LETTER_LOWER:
+                            output.write(HTML_ATTR_OL_TYPE_LETTER_LOWER, sizeof(HTML_ATTR_OL_TYPE_LETTER_LOWER) - 1);
+                            break;
+                        case ListType::LETTER_UPPER:
+                            output.write(HTML_ATTR_OL_TYPE_LETTER_UPPER, sizeof(HTML_ATTR_OL_TYPE_LETTER_UPPER) - 1);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                // Reversed.
+                if(node.meta.listReversed) {
+                    output.write(" ", sizeof(" ") - 1);
+
+                    output.write(HTML_ATTR_OL_REVERSED, sizeof(HTML_ATTR_OL_REVERSED) - 1);
+                }
+
+                // Write the ending '>' that was excluded.
+                output.write(&HTML_TAG_OPEN_LIST_ORDERED[sizeof(HTML_TAG_OPEN_LIST_ORDERED) - 2], sizeof(char));
+
+                render_children(node, output);
+                output.write(HTML_TAG_CLOSE_LIST_ORDERED, sizeof(HTML_TAG_CLOSE_LIST_ORDERED) - 1);
+
+                break;
+            }
+            case ASTNodeType::ORDERED_LIST_ELEMENT: {
                 output.write(HTML_TAG_OPEN_LIST_ELEMENT, sizeof(HTML_TAG_OPEN_LIST_ELEMENT) - 1);
                 render_children(node, output);
                 output.write(HTML_TAG_CLOSE_LIST_ELEMENT, sizeof(HTML_TAG_CLOSE_LIST_ELEMENT) - 1);
@@ -154,15 +219,15 @@ namespace mker {
     }
 
     void Renderer::render_char(const char* start, size_t& index, size_t size, UnmanagedBuffer<char>& output) noexcept {
-        #define WRITE(c) output.write(c, sizeof(c) - 1)
+        #define TRANSLATE_CHAR(c) output.write(c, sizeof(c) - 1)
 
         switch(start[index]) {
             case '<':
-                WRITE(HTML_ENTITY_LT);
+                TRANSLATE_CHAR(HTML_ENTITY_LT);
                 ++index;
                 break;
             case '>':
-                WRITE(HTML_ENTITY_GT);
+                TRANSLATE_CHAR(HTML_ENTITY_GT);
                 ++index;
                 break;
             case '&': {
@@ -179,9 +244,10 @@ namespace mker {
 
                 // Don't translate &something; to &amp;something;
                 if(index < size && start[index] == HTML_ENTITY_END) {
+                    // Write '&'
                     output.write(start + backupIndex, sizeof(char));
                 } else {
-                    WRITE(HTML_ENTITY_AMP);
+                    TRANSLATE_CHAR(HTML_ENTITY_AMP);
                 }
 
                 index = backupIndex + 1;
@@ -194,6 +260,6 @@ namespace mker {
             }
         }
 
-        #undef WRITE
+        #undef TRANSLATE_CHAR
     }
 }

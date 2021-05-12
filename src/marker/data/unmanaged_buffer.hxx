@@ -20,12 +20,12 @@ class UnmanagedBuffer {
 public:
     UnmanagedBuffer() : data(NULL), size(0), capacity(0) { }
 
-    T* get_data() noexcept;
+    T*     get_data() noexcept;
     size_t get_size() noexcept;
-    void ignore_last() noexcept;
-    void write(const T* src, size_t length);
+    void   set_size(size_t value) noexcept;
+    void   ignore_last() noexcept;
+    void   write(const T* src, size_t length);
 
-private:
     void adjust_capacity(size_t length);
 };
 
