@@ -105,6 +105,30 @@ Inline <html> tags </html>  of <any type *not strong*> *strong* and also
 multiline</any>.
 ```
 
+### Ordered lists
+
+An ordered list is marked by a sequence of characters followed by `.`
+
+The sequence of characters can be made up of either:
+
+- **any** number of characters that make up a valid **lowercase** roman numeral
+- **any** number of characters that make up a valid **uppercase** roman numeral
+- **max 5** lowercase letter characters (`a` -> `zzzzz`)
+- **max 5** uppercase letter characters (`A` -> `ZZZZZ`)
+- **max 9** digit characters (`0` -> `999999999`)
+
+The sequence of characters will be converted to a number.
+
+The number attached to the first list element represents the list start. The type of this number
+represents the list type (*e.g.* `IV.` will give a start of 4 and an uppercase roman type).
+
+The number attached to the second element can have a special meaning. If it is smaller than the number
+attached to the first list element, the list will be reversed.
+
+The numbers attached to the next list elements will be ignored, as long as they are of the same type.
+
+If two adjanced list elements have different types, they will belong in different lists.
+
 ### HTML Entities
 
 Some symbols are automatically translated to HTML entities:
